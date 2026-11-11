@@ -1,0 +1,13 @@
+# Dados do advogado: nunca versionar
+config.json
+dados/
+relatorios/
+*.jsonl
+*.csv
+estado.json
+ultima_execucao.json
+*.tmp
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db
