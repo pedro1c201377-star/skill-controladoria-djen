@@ -40,22 +40,37 @@ O script cria a pasta de trabalho (por padrão `Desktop/controladoria-djen`), co
 
 **Passo 4, teste.** Rode `python captar.py --dias 7` dentro da pasta de trabalho. Em seguida faça a "Captação e triagem" (a partir do item 3) sobre as publicações captadas. Informe também quantas foram descartadas como homônimo.
 
-**Passo 5, agendamento.** O Codex não tem agendador próprio, por isso as tarefas vão para o agendador do sistema. Mostre os comandos primeiro e depois crie as tarefas:
+**Passo 5, agendamento.** Crie as duas tarefas você mesmo, sem pedir que o advogado faça nada além de aprovar o que aparecer. Antes, verifique qual caminho está disponível nesta sessão e siga o primeiro que funcionar.
+
+*Caminho A, agendamento nativo do Codex (preferido).* O app desktop (Codex/ChatGPT) tem "Scheduled tasks", e o próprio agente consegue criá-las a partir da conversa. Confira se você tem uma ferramenta ou um comando de tarefas agendadas disponível. Na dúvida, consulte a documentação atual do Codex sobre scheduled tasks/automations. Se tiver, crie:
+- `controladoria-djen-manha`: `RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=7;BYMINUTE=0`
+- `controladoria-djen-tarde`: `RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;BYHOUR=17;BYMINUTE=0`
+
+Em cada uma, use a pasta de trabalho como projeto (sem worktree, para os dados ficarem na própria pasta), faça cada execução começar uma conversa nova e use esta instrução:
+
+```
+Use a skill $controladoria-djen. Capte as publicações do DJEN desde a última captação, faça a triagem de prazos e me entregue o resumo do dia, urgentes primeiro. Pasta de trabalho: <PASTA>. Turno: manha. Se hoje estiver em feriados.txt, não rode e apenas avise.
+```
+
+As tarefas agendadas rodam sem supervisão, no sandbox padrão do advogado e sem pedir aprovação. No modo `workspace-write`, a rede fica bloqueada, e a captação precisa da API do DJEN. Para resolver, libere só o comando de captação. Se a versão do Codex aceitar "rules", crie uma regra que permita `python captar.py` fora do sandbox, conferindo a sintaxe na documentação atual. Se não aceitar, ative `[sandbox_workspace_write] network_access = true` em `~/.codex/config.toml`, avisando o advogado. Não ponha a tarefa em "Full access". Depois, dispare uma execução de teste ("Run now", se houver) e confira se o relatório saiu.
+
+*Caminho B, agendador do sistema (Codex CLI ou sem agendamento nativo).* Rode:
 
 ```bash
-python "<pasta-desta-skill>/scripts/agendar.py" --pasta "<PASTA>" --dry-run
 python "<pasta-desta-skill>/scripts/agendar.py" --pasta "<PASTA>"
 ```
 
-Isso cria `controladoria-djen-manha` (07h) e `controladoria-djen-tarde` (17h), de segunda a sexta, no Agendador de Tarefas do Windows ou no crontab do Mac/Linux. Cada execução roda `rodar_agendado.py`, que:
+Isso cria as mesmas duas tarefas, de segunda a sexta, no Agendador de Tarefas do Windows ou no crontab do Mac/Linux. Cada execução roda `rodar_agendado.py`, que:
 - pula os dias de `feriados.txt`;
-- chama `codex exec` com esta skill, no sandbox `workspace-write` com rede liberada só para os comandos dessa execução;
+- chama `codex exec` com esta skill, no sandbox `workspace-write`, com rede liberada só para essa execução;
 - salva o resumo em `relatorios/prazos-AAAA-MM-DD-<turno>.md`.
 
-Explique ao advogado três pontos:
-- o computador precisa estar ligado no horário, e o Codex CLI tem de estar instalado e logado (`npm install -g @openai/codex` e depois `codex login`);
-- o resumo do dia fica na pasta `relatorios`, e o registro de cada execução fica em `relatorios/agendamento.log`;
-- para remover as tarefas, basta rodar `agendar.py --pasta "<PASTA>" --remover`.
+Para conferir sem esperar o horário, rode uma vez `python rodar_agendado.py --turno manha` na pasta de trabalho. Esse caminho exige o Codex CLI instalado e logado. Se ele não estiver, instale você mesmo (`npm install -g @openai/codex`) e peça ao advogado apenas o `codex login`.
+
+Use um caminho só, para não captar em dobro. Ao final, diga ao advogado qual foi usado e explique:
+- o computador precisa estar ligado no horário, e no caminho A o app também precisa estar aberto;
+- o resumo do dia fica na pasta `relatorios` (no caminho A, também na aba Scheduled do app);
+- como remover as tarefas: pela aba Scheduled no caminho A, ou com `agendar.py --pasta "<PASTA>" --remover` no caminho B.
 
 Termine com um resumo do que ficou pronto e do que ainda depende dele.
 

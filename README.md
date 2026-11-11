@@ -45,7 +45,12 @@ A pasta `codex/controladoria-djen` traz a mesma skill adaptada para o Codex CLI.
 
 Versões antigas do Codex usavam `~/.codex/skills`. Reinicie o Codex e diga: **"$controladoria-djen configure a controladoria do DJEN"**.
 
-**Diferença no agendamento.** O Codex não tem agendador próprio. Na configuração, a skill cria as tarefas `controladoria-djen-manha` (07h) e `controladoria-djen-tarde` (17h), de segunda a sexta, no **Agendador de Tarefas do Windows** ou no **crontab** do Mac/Linux. Cada tarefa roda `codex exec` com a skill e salva o resumo do dia em `relatorios/prazos-AAAA-MM-DD-<turno>.md`. Requisitos: o Codex CLI instalado e logado (`npm install -g @openai/codex` e depois `codex login`) e o computador ligado no horário. Para remover as tarefas: `python agendar.py --pasta <pasta> --remover`.
+**Agendamento automático.** Na configuração, a skill cria sozinha as tarefas `controladoria-djen-manha` (07h) e `controladoria-djen-tarde` (17h), de segunda a sexta:
+
+- **App desktop do Codex/ChatGPT:** usa as *Scheduled tasks* nativas do app. Para a captação acessar a API do DJEN, libera só o comando de captação fora do sandbox, sem colocar a tarefa em acesso total.
+- **Só o Codex CLI:** cria as tarefas no **Agendador de Tarefas do Windows** ou no **crontab** do Mac/Linux. Cada uma roda `codex exec` com a skill.
+
+Nos dois casos, o resumo do dia vai para `relatorios/prazos-AAAA-MM-DD-<turno>.md` e o computador precisa estar ligado no horário.
 
 ## Uso diário
 
