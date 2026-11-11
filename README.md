@@ -1,6 +1,6 @@
-# Controladoria DJEN, skill para o Claude
+# Controladoria DJEN, skill para o Claude e o Codex
 
-Skill do Claude (Claude Code e app desktop) que faz a controladoria de prazos de advogados a partir do **DJEN**, o Diário de Justiça Eletrônico Nacional do CNJ.
+Skill para o **Claude** (Claude Code e app desktop) e para o **Codex** (OpenAI) que faz a controladoria de prazos de advogados a partir do **DJEN**, o Diário de Justiça Eletrônico Nacional do CNJ.
 
 ## O que faz
 
@@ -34,6 +34,19 @@ Depois diga ao Claude: **"configure a controladoria do DJEN"**.
 
 Requisito: Python 3. Se não estiver instalado, o Claude instala ou explica como instalar.
 
+## Versão para o Codex (OpenAI)
+
+A pasta `codex/controladoria-djen` traz a mesma skill adaptada para o Codex CLI.
+
+**Instalação.** Copie `codex/controladoria-djen` para a pasta de skills do Codex:
+
+- Windows: `C:\Users\<seu usuário>\.agents\skills\controladoria-djen`
+- Mac/Linux: `~/.agents/skills/controladoria-djen`
+
+Versões antigas do Codex usavam `~/.codex/skills`. Reinicie o Codex e diga: **"$controladoria-djen configure a controladoria do DJEN"**.
+
+**Diferença no agendamento.** O Codex não tem agendador próprio. Na configuração, a skill cria as tarefas `controladoria-djen-manha` (07h) e `controladoria-djen-tarde` (17h), de segunda a sexta, no **Agendador de Tarefas do Windows** ou no **crontab** do Mac/Linux. Cada tarefa roda `codex exec` com a skill e salva o resumo do dia em `relatorios/prazos-AAAA-MM-DD-<turno>.md`. Requisitos: o Codex CLI instalado e logado (`npm install -g @openai/codex` e depois `codex login`) e o computador ligado no horário. Para remover as tarefas: `python agendar.py --pasta <pasta> --remover`.
+
 ## Uso diário
 
 As tarefas agendadas entregam o resumo do dia sozinhas, com os urgentes primeiro. Você também pode pedir a qualquer momento: *"capte as publicações do DJEN e faça a triagem de prazos"*.
@@ -50,11 +63,15 @@ Seus dados ficam só no seu computador, em `controladoria-djen/dados/`: `publica
 ## Estrutura
 
 ```
-controladoria-djen/
+controladoria-djen/           versão Claude
 ├── SKILL.md                  instruções para o Claude
 ├── references/regras-prazos.md
 └── scripts/
     ├── configurar.py         cria a pasta de trabalho e o config.json
     ├── captar.py             captação incremental
     └── feriados.txt          feriados nacionais (modelo)
+codex/controladoria-djen/     versão Codex (os mesmos arquivos, mais:)
+└── scripts/
+    ├── agendar.py            cria as tarefas no Agendador do Windows ou no crontab
+    └── rodar_agendado.py     execução agendada: pula feriados e chama codex exec
 ```
